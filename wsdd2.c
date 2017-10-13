@@ -124,8 +124,10 @@ int connected_if(const _saddr_t *sa, _saddr_t *ci)
 	struct ifaddrs *ifaddr, *ifa;
 	int rv = -1;
 
-	if (getifaddrs(&ifaddr))
+	if (getifaddrs(&ifaddr)) {
+		errno = EADDRNOTAVAIL;
 		return -1;
+	}
 
 	ci->ss.ss_family = sa->ss.ss_family;
 
@@ -199,7 +201,8 @@ int connected_if(const _saddr_t *sa, _saddr_t *ci)
 	}
 
 	freeifaddrs(ifaddr);
-	errno = EADDRNOTAVAIL;
+	if (rv)
+		errno = EADDRNOTAVAIL;
 	return rv;
 }
 
