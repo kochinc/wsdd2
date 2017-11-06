@@ -1,6 +1,9 @@
+[Install]
+WantedBy=smbd.service
+
 [Unit]
 Description=WSD/LLMNR Discovery/Name Service Daemon
-BindsTo=smbd.service
+PartOf=smbd.service
 
 [Service]
 ExecStart=/usr/sbin/wsdd2
