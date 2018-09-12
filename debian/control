@@ -7,9 +7,7 @@ Standards-Version: 3.9.4
 
 Package: wsdd2
 Architecture: any
-Depends: samba-common,
-         samba-common-bin,
-         ${misc:Depends},
+Depends: ${misc:Depends},
          ${shlibs:Depends}
 Description: Web Services for Devices (WSD) daemon
  Web Services for Devices or Web Services on Devices (WSD), is a

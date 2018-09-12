@@ -443,6 +443,7 @@ static int wsd_send_msg(int fd, struct endpoint *ep, const _saddr_t *sa,
 			const char *msg, size_t msglen, unsigned int rwait)
 {
 	char ip[_ADDRSTRLEN];
+	int ret;
 
 	inet_ntop(sa->ss.ss_family, _SIN_ADDR(sa), ip, sizeof ip);
 	DEBUG(3, W, "TO: %s:%u (fd=%d)\n%s\n", ip, _SIN_PORT(sa), fd, msg);
@@ -451,13 +452,17 @@ static int wsd_send_msg(int fd, struct endpoint *ep, const _saddr_t *sa,
 		useconds_t us = random() % rwait;
 		usleep(us);
 	}
-	return (ep->type == SOCK_STREAM)
-			? send(fd, msg, msglen, MSG_NOSIGNAL)
-			: sendto(fd, msg, msglen, MSG_NOSIGNAL,
+
+	if (ep->type == SOCK_STREAM)
+		ret = send(fd, msg, msglen, MSG_NOSIGNAL);
+	else
+		ret = sendto(fd, msg, msglen, MSG_NOSIGNAL,
 				(struct sockaddr *)sa,
 				(ep->family == AF_INET)
 					? sizeof sa->in
 					: sizeof sa->in6);
+
+	return !(ret == msglen);
 }
 
 /*
@@ -584,9 +589,7 @@ static int wsd_send_soap_msg(int fd, struct endpoint *ep,
 
 	if (!rv) {
 		rv = wsd_send_msg(fd, ep, sa, msg, msglen, 0);
-		if (rv == msglen)
-			rv = 0;
-		else {
+		if (rv) {
 			ep->errstr = __FUNCTION__ ": send";
 			ep->_errno = errno;
 			rv = -1;
@@ -795,7 +798,7 @@ static int send_http_resp_header(int fd, struct endpoint *ep,
 
 	DEBUG(3, W, "HEADER:\n%s\n", s);
 
-	if (wsd_send_msg(fd, ep, sa, s, len, 50000) != len) {
+	if (wsd_send_msg(fd, ep, sa, s, len, 50000)) {
 		ep->errstr = "send_http_resp_header: send";
 		ep->_errno = errno;
 		rv = -1;
@@ -1077,7 +1080,7 @@ int wsd_recv(struct endpoint *ep)
 	if (len <= 0) {
 		if (ep->sock != fd)
 			close(fd);
-		return 0;
+		return len;
 	}
 
 	buf[len] = '\0';
@@ -1109,8 +1112,7 @@ int wsd_recv(struct endpoint *ep)
 							status,
 							ep->errstr,
 							ep->errstr);
-				if (ep->sock != fd)
-					close(fd);
+				close(fd);
 				return 0;
 			}
 		}

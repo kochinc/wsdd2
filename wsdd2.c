@@ -124,10 +124,8 @@ int connected_if(const _saddr_t *sa, _saddr_t *ci)
 	struct ifaddrs *ifaddr, *ifa;
 	int rv = -1;
 
-	if (getifaddrs(&ifaddr)) {
-		errno = EADDRNOTAVAIL;
+	if (getifaddrs(&ifaddr))
 		return -1;
-	}
 
 	ci->ss.ss_family = sa->ss.ss_family;
 
@@ -201,8 +199,7 @@ int connected_if(const _saddr_t *sa, _saddr_t *ci)
 	}
 
 	freeifaddrs(ifaddr);
-	if (rv)
-		errno = EADDRNOTAVAIL;
+	errno = EADDRNOTAVAIL;
 	return rv;
 }
 
@@ -752,12 +749,19 @@ again:
 			n = select(nfds + 1, &rfds, NULL, NULL, NULL);
 			DEBUG(3, W, "select: n=%d", n);
 			for (ep = endpoints; n > 0 && ep; ep = ep->next) {
-				if (FD_ISSET(ep->sock, &rfds)) {
-					DEBUG(3, W, "dispatch %s_recv",
-						ep->service->name);
-					n--;
-					if (ep->service->recv)
-						ep->service->recv(ep);
+				if (!FD_ISSET(ep->sock, &rfds))
+					continue;
+				DEBUG(3, W, "dispatch %s_recv",
+					ep->service->name);
+				n--;
+				if (ep->service->recv) {
+					int ret = ep->service->recv(ep);
+					if (ret < 0) {
+						DEBUG(1, W,
+					"Detected %s socket error, restarting",
+							ep->service->name);
+						restart_service();
+					}
 				}
 			}
 		} while (n >= 0 && !restart);

@@ -1,6 +1,3 @@
-[Install]
-WantedBy=smbd.service
-
 [Unit]
 Description=WSD/LLMNR Discovery/Name Service Daemon
 PartOf=smbd.service

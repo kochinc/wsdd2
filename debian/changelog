@@ -1,3 +1,15 @@
+wsdd2 (1.8) stable; urgency=medium
+
+  * Fix CPU spinner on disconnected endpoint socket.
+
+ -- Justin Maggard <justin.maggard@netgear.com>  Fri, 06 Oct 2017 10:58:48 -0700
+
+wsdd2 (1.7) stable; urgency=medium
+
+  * Fix send return code evaluation.
+
+ -- Justin Maggard <justin.maggard@netgear.com>  Wed, 23 Aug 2017 14:34:10 -0700
+
 wsdd2 (1.6) stable; urgency=medium
 
   * Fix one more crash bug with VPN interfaces.

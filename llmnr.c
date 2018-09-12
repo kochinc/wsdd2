@@ -381,16 +381,16 @@ int llmnr_recv(struct endpoint *ep)
 	uint8_t buf[10000];
 	_saddr_t sa;
 	socklen_t slen = sizeof sa;
-	ssize_t len = recvfrom(ep->sock, buf, sizeof buf, 0,
+	ssize_t len = recvfrom(ep->sock, buf, sizeof(buf)-1, 0,
 				(struct sockaddr *)&sa, &slen);
 	char name[HOST_NAME_MAX + 1];
 
-	if (len > 0 && !gethostname(name, sizeof name -1)) {
+	if (len > 0 && !gethostname(name, sizeof(name)-1)) {
 		buf[len] = '\0';
 		llmnr_send_response(ep, &sa, buf, len, name);
 	}
 
-	return 0;
+	return len;
 }
 
 int llmnr_timer(struct endpoint *ep)
