@@ -1,8 +1,13 @@
 [Unit]
 Description=WSD/LLMNR Discovery/Name Service Daemon
-PartOf=smbd.service
+PartOf=smb.service
 
 [Service]
+DynamicUser=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
 ExecStart=/usr/sbin/wsdd2
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
