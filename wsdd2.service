@@ -3,7 +3,7 @@ Description=WSD/LLMNR Discovery/Name Service Daemon
 PartOf=smb.service
 
 [Service]
-User=nobody
+DynamicUser=true
 PrivateTmp=true
 PrivateDevices=true
 ProtectSystem=strict
