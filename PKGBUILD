@@ -1,6 +1,6 @@
 pkgname=wsdd2
 pkgver=1.8
-pkgrel=1
+pkgrel=2
 url=""
 pkgdesc="WSDD and LLMNR daemon"
 arch=('x86_64' 'armv7h')
