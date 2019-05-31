@@ -1,0 +1,83 @@
+#! /bin/bash
+
+### BEGIN INIT INFO
+# Provides:          wsdd2
+# Required-Start:    $local_fs $network
+# Required-Stop:     $local_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: wsdd2 service
+# Description:       Run WSDD2 service
+### END INIT INFO
+
+
+set -e
+
+umask 022
+
+if test -f /etc/default/wsdd2; then
+    . /etc/default/wsdd2
+fi
+
+. /lib/lsb/init-functions
+
+# Always daemonize
+WSDD2_OPTS="$WSDD2_OPTS -d"
+
+check_for_upstart() {
+    if init_is_upstart; then
+        exit $1
+    fi
+}
+
+export PATH="${PATH:+$PATH:}/usr/sbin:/sbin"
+
+### FIXME probably a good idea to check for the existance of files wsdd2 cares about here
+
+
+case "$1" in
+  start)
+	check_for_upstart 1
+	log_daemon_msg "Starting WSDD2 server..." || true
+	if start-stop-daemon --start --quiet --oknodo --pidfile /run/wsdd2.pid --exec /usr/sbin/wsdd2 -- $WSDD2_OPTS; then
+		log_end_msg 0 || true
+	else
+		log_end_msg 1 || true
+	fi
+	;;
+
+  stop)
+	check_for_upstart 0
+	log_daemon_msg "Stopping WSDD2 server..." || true
+	if start-stop-daemon --stop --quiet --oknodo --pidfile /run/wsdd2.pid; then
+		log_end_msg 0 || true
+	else
+		log_end_msg 1 || true
+	fi
+	;;
+
+  restart)
+        check_for_upstart 1
+        log_daemon_msg "Restarting WSDD2 server" "sshd" || true
+        start-stop-daemon --stop --quiet --oknodo --retry 30 --pidfile /run/wsdd2.pid
+        if start-stop-daemon --start --quiet --oknodo --pidfile /run/wsdd2.pid --exec /usr/sbin/wsdd2 -- $WSDD2_OPTS; then
+            log_end_msg 0 || true
+        else
+            log_end_msg 1 || true
+        fi
+        ;;
+
+
+  status)
+        check_for_upstart 1
+        status_of_proc -p /run/wsdd2.pid /usr/sbin/wsdd2 wsdd2 && exit 0 || exit $?
+        ;;
+
+  *)
+    log_action_msg "Usage: /etc/init.d/wsdd2 {start|stop|restart|status}" || true
+    exit 1
+    ;;
+
+esac
+
+exit 0
